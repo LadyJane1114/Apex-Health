@@ -1,0 +1,27 @@
+# Node
+node_modules/
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# Docker
+postgres_data/
+
+# JetBrains IDEs (IntelliJ / DataGrip)
+.idea/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Vite cache
+.vite
