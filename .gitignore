@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Java / Maven
 backend/target/
 backend/*.jar
@@ -24,3 +25,32 @@ Thumbs.db
 
 # Docker
 docker-compose.override.yml
+=======
+# Node
+node_modules/
+pnpm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Build outputs
+dist/
+build/
+
+# Environment variables
+.env
+.env.local
+
+# Docker
+postgres_data/
+
+# JetBrains IDEs (IntelliJ / DataGrip)
+.idea/
+*.iml
+
+# OS junk
+.DS_Store
+Thumbs.db
+
+# Vite cache
+.vite
+>>>>>>> d4b3e1f2b4d618fa5f07931ead13e356e5e8f3f4

@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 # Apex Health Platform – MVP
 
 A research analytics dashboard demonstrating Social Determinants of Health (SDOH) alignment visualization.
@@ -89,3 +90,7 @@ cd frontend && npm install && npm run dev
 - PHIA/HIPAA compliance
 - Real data pipelines
 - FHIR interoperability APIs
+=======
+# Apex-Health
+The repository for the Apex-Health project.
+>>>>>>> d4b3e1f2b4d618fa5f07931ead13e356e5e8f3f4
