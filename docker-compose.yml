@@ -1,0 +1,37 @@
+version: '3.8'
+
+services:
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.backend
+    container_name: apex-health-backend
+    ports:
+      - "8080:8080"
+    volumes:
+      - sqlite-data:/app/data
+    environment:
+      - SPRING_DATASOURCE_URL=jdbc:sqlite:/app/data/apexhealth.db
+    networks:
+      - apex-net
+    restart: unless-stopped
+
+  frontend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile.frontend
+    container_name: apex-health-frontend
+    ports:
+      - "3000:80"
+    depends_on:
+      - backend
+    networks:
+      - apex-net
+    restart: unless-stopped
+
+networks:
+  apex-net:
+    driver: bridge
+
+volumes:
+  sqlite-data:
