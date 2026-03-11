@@ -1,0 +1,24 @@
+.pc-card {
+  background: var(--white);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  padding: 22px 24px;
+  box-shadow: var(--shadow);
+  animation: fadeUp 0.4s ease 0.2s both;
+}
+
+.pc-header { margin-bottom: 16px; }
+.pc-title { font-family: var(--font-display); font-size: 19px; font-weight: 700; }
+.pc-sub { font-size: 12px; color: var(--text-muted); margin-top: 3px; }
+
+.pc-tooltip {
+  background: var(--black);
+  border: 1px solid var(--gold-dark);
+  border-radius: var(--radius);
+  padding: 10px 14px;
+}
+.pc-tt-name { font-size: 12px; color: var(--text-muted); margin-bottom: 3px; }
+.pc-tt-val { font-family: var(--font-display); font-size: 18px; font-weight: 700; color: var(--gold); }
+.pc-tt-type { font-size: 11px; color: #5A554E; margin-top: 2px; }
+
+.pc-empty { text-align: center; color: var(--text-muted); padding: 40px; font-size: 13px; }
