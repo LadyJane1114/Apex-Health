@@ -1,101 +1,91 @@
-import { useState } from 'react'
 import './StudyTable.css'
 
-const STATUS_COLORS = {
-  'Active': { bg: '#dcfce7', text: '#166534' },
-  'Completed': { bg: '#e0f2fe', text: '#075985' },
-  'Proposed': { bg: '#fef9c3', text: '#854d0e' }
+const STATUS_STYLE = {
+  Active:    { bg: '#dcfce7', color: '#166534' },
+  Completed: { bg: '#dbeafe', color: '#1e40af' },
+  Proposed:  { bg: '#fef9c3', color: '#854d0e' }
 }
 
-export default function StudyTable({ studies }) {
-  const [expanded, setExpanded] = useState(null)
-
-  if (!studies || studies.length === 0) {
-    return (
-      <div className="study-table-card">
-        <div className="table-header">
-          <h2 className="table-title">Research Studies</h2>
-        </div>
-        <div className="table-empty">
-          No studies match the selected filters.
-        </div>
-      </div>
-    )
-  }
-
+export default function StudyTable({ studies, selectedSdoh, onStudyClick }) {
   return (
-    <div className="study-table-card">
-      <div className="table-header">
+    <div className="st-card">
+      <div className="st-header">
         <div>
-          <h2 className="table-title">Research Studies</h2>
-          <p className="table-sub">{studies.length} {studies.length === 1 ? 'study' : 'studies'} found</p>
+          <h2 className="st-title">Research Studies</h2>
+          <p className="st-sub">
+            {studies.length === 0
+              ? 'No studies match the current filters'
+              : `${studies.length} ${studies.length === 1 ? 'study' : 'studies'} · click any row to view full details`}
+          </p>
         </div>
       </div>
-      <div className="table-wrap">
-        <table className="table">
-          <thead>
-            <tr>
-              <th>Study Title</th>
-              <th>Author</th>
-              <th>Year</th>
-              <th>Type</th>
-              <th>Population</th>
-              <th>Status</th>
-              <th>SDOH Score</th>
-            </tr>
-          </thead>
-          <tbody>
-            {studies.map((s) => (
-              <>
+
+      {studies.length === 0 ? (
+        <div className="st-empty">
+          <div className="st-empty-icon">🔍</div>
+          <p>No studies match the current filters.</p>
+          <p className="st-empty-hint">Try adjusting your filter selections.</p>
+        </div>
+      ) : (
+        <div className="st-wrap">
+          <table className="st-table">
+            <thead>
+              <tr>
+                <th>Study Title</th>
+                <th>Author</th>
+                <th>Year</th>
+                <th>Type</th>
+                <th>Population</th>
+                <th>Participants</th>
+                <th>Status</th>
+                <th>SDOH Score</th>
+                {selectedSdoh && <th>{selectedSdoh.split(' ')[0]}</th>}
+              </tr>
+            </thead>
+            <tbody>
+              {studies.map(s => (
                 <tr
                   key={s.id}
-                  className={`table-row${expanded === s.id ? ' expanded' : ''}`}
-                  onClick={() => setExpanded(expanded === s.id ? null : s.id)}
+                  className="st-row"
+                  onClick={() => onStudyClick && onStudyClick(s)}
                 >
-                  <td className="td-title">
-                    <span className="expand-icon">{expanded === s.id ? '▾' : '▸'}</span>
-                    {s.title}
+                  <td className="st-title-cell">
+                    <span className="st-open-icon">↗</span>
+                    <span className="st-study-title">{s.title}</span>
                   </td>
-                  <td>{s.author}</td>
+                  <td className="st-author">{s.author}</td>
                   <td>{s.year}</td>
-                  <td>
-                    <span className="type-badge">{s.studyType}</span>
-                  </td>
+                  <td><span className="st-type">{s.studyType}</span></td>
                   <td>{s.targetPopulation}</td>
+                  <td>{s.participants > 0 ? s.participants.toLocaleString() : <span style={{ color: '#8A847A' }}>TBD</span>}</td>
                   <td>
-                    <span className="status-badge" style={{
-                      background: STATUS_COLORS[s.status]?.bg || '#f3f4f6',
-                      color: STATUS_COLORS[s.status]?.text || '#374151'
-                    }}>
+                    <span className="st-status" style={STATUS_STYLE[s.status] || {}}>
                       {s.status}
                     </span>
                   </td>
                   <td>
-                    <div className="score-cell">
-                      <span className="score-value">{s.overallSdohScore}%</span>
-                      <div className="score-bar-bg">
-                        <div
-                          className="score-bar-fill"
-                          style={{ width: `${s.overallSdohScore}%` }}
-                        />
+                    <div className="st-score">
+                      <span className="st-score-num">{s.overallSdohScore}%</span>
+                      <div className="st-bar-bg">
+                        <div className="st-bar-fill" style={{ width: `${s.overallSdohScore}%` }} />
                       </div>
                     </div>
                   </td>
-                </tr>
-                {expanded === s.id && (
-                  <tr key={`${s.id}-desc`} className="expand-row">
-                    <td colSpan={7}>
-                      <div className="expand-content">
-                        <strong>Description:</strong> {s.description || 'No description available.'}
-                      </div>
+                  {selectedSdoh && (
+                    <td>
+                      <span className="st-sdoh-score" style={{
+                        color: (s.sdohScores[selectedSdoh] >= 80) ? '#9A7A2E' : 'inherit'
+                      }}>
+                        {s.sdohScores[selectedSdoh] ?? '—'}%
+                      </span>
                     </td>
-                  </tr>
-                )}
-              </>
-            ))}
-          </tbody>
-        </table>
-      </div>
+                  )}
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
     </div>
   )
 }

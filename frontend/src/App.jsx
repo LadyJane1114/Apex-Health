@@ -1,176 +1,144 @@
-import { useState, useEffect } from 'react'
+import { useState, useMemo } from 'react'
 import Header from './components/Header'
 import KpiBar from './components/KpiBar'
 import SdohChart from './components/SdohChart'
 import StudyTable from './components/StudyTable'
 import FilterPanel from './components/FilterPanel'
-import { fetchStudies, fetchKpis, fetchSdohAggregates } from './data/api'
+import TrendChart from './components/TrendChart'
+import PopulationChart from './components/PopulationChart'
+import InsightsPanel from './components/InsightsPanel'
+import StudyModal from './components/StudyModal'
+import { STUDIES, KPIS, SDOH_AGGREGATES } from './data/dummyData'
 import './styles/app.css'
 
-// Fallback demo data if backend is not running
-const DEMO_KPIS = {
-  totalStudies: 8,
-  activeStudies: 4,
-  completedStudies: 3,
-  averageSdohAlignment: 74.2,
-  totalPopulationsServed: 8
-}
-
-const DEMO_SDOH = [
-  { determinant: "Income & Distribution", averageScore: 78.8 },
-  { determinant: "Education", averageScore: 73.1 },
-  { determinant: "Unemployment & Job Security", averageScore: 75.0 },
-  { determinant: "Employment Conditions", averageScore: 72.5 },
-  { determinant: "Early Childhood Development", averageScore: 71.3 },
-  { determinant: "Food Insecurity", averageScore: 68.8 },
-  { determinant: "Housing", averageScore: 72.5 },
-  { determinant: "Social Exclusion", averageScore: 78.8 },
-  { determinant: "Social Safety Network", averageScore: 80.0 },
-  { determinant: "Health Services", averageScore: 78.1 },
-  { determinant: "Indigenous Status", averageScore: 60.6 },
-  { determinant: "Gender", averageScore: 68.1 },
-  { determinant: "Race", averageScore: 75.6 },
-  { determinant: "Disability", averageScore: 62.5 }
-]
-
-const DEMO_STUDIES = [
-  {
-    id: 1, title: "Housing Instability and Mental Health Outcomes in Urban Indigenous Communities",
-    author: "Dr. Sarah Redcloud", year: "2023", studyType: "Cohort Study",
-    targetPopulation: "Indigenous", status: "Active", overallSdohScore: 74.6,
-    description: "Examines the relationship between housing instability and mental health in urban Indigenous populations."
-  },
-  {
-    id: 2, title: "Food Security Interventions Among Low-Income Families in Nova Scotia",
-    author: "Dr. James Tompkins", year: "2023", studyType: "RCT",
-    targetPopulation: "Low-Income", status: "Active", overallSdohScore: 73.2,
-    description: "Evaluates community-based food security programs and their impact on family health outcomes."
-  },
-  {
-    id: 3, title: "Early Childhood Development Programs: Racial Disparities in Access",
-    author: "Dr. Amara Diallo", year: "2022", studyType: "Cross-Sectional",
-    targetPopulation: "Racialized Groups", status: "Completed", overallSdohScore: 75.4,
-    description: "Investigates racial disparities in access to early childhood development programs."
-  },
-  {
-    id: 4, title: "Gender-Based Employment Barriers in Healthcare Sector",
-    author: "Dr. Priya Nair", year: "2023", studyType: "Survey",
-    targetPopulation: "Women", status: "Active", overallSdohScore: 71.4,
-    description: "Examines gender-based employment barriers among healthcare workers."
-  },
-  {
-    id: 5, title: "Disability and Social Exclusion: Community Integration Programs",
-    author: "Dr. Michael Chen", year: "2022", studyType: "Mixed Methods",
-    targetPopulation: "Disability", status: "Completed", overallSdohScore: 74.6,
-    description: "Evaluates social integration programs for people with disabilities."
-  },
-  {
-    id: 6, title: "Income Inequality and Preventable Hospitalizations",
-    author: "Dr. Emma Laurent", year: "2024", studyType: "Retrospective",
-    targetPopulation: "General Population", status: "Proposed", overallSdohScore: 74.3,
-    description: "Analyzes the relationship between income inequality and rates of preventable hospitalizations."
-  },
-  {
-    id: 7, title: "Immigrant Health Outcomes and Social Safety Net Access",
-    author: "Dr. Rahim Chowdhury", year: "2023", studyType: "Cohort Study",
-    targetPopulation: "Immigrants", status: "Active", overallSdohScore: 78.2,
-    description: "Studies health outcomes for recent immigrants and their access to social safety programs."
-  },
-  {
-    id: 8, title: "Elderly Care: Employment Conditions of Personal Support Workers",
-    author: "Dr. Carol MacPherson", year: "2022", studyType: "Survey",
-    targetPopulation: "Elderly", status: "Completed", overallSdohScore: 72.1,
-    description: "Evaluates working conditions and burnout among personal support workers in elderly care."
-  }
-]
+const TABS = ['Overview', 'SDOH Analysis', 'Studies', 'Insights']
 
 export default function App() {
-  const [kpis, setKpis] = useState(DEMO_KPIS)
-  const [sdohData, setSdohData] = useState(DEMO_SDOH)
-  const [studies, setStudies] = useState(DEMO_STUDIES)
-  const [loading, setLoading] = useState(false)
-  const [usingDemo, setUsingDemo] = useState(true)
-
+  const [activeTab, setActiveTab] = useState('Overview')
+  const [selectedStudy, setSelectedStudy] = useState(null)
   const [filters, setFilters] = useState({
-    population: '',
+    population: 'All Populations',
     status: '',
     sdoh: '',
-    minScore: ''
+    minScore: 0
   })
 
-  // Try to load from API, fall back to demo data silently
-  useEffect(() => {
-    loadData()
-  }, [])
-
-  useEffect(() => {
-    loadStudies()
+  const filteredStudies = useMemo(() => {
+    return STUDIES.filter(s => {
+      if (filters.population && filters.population !== 'All Populations') {
+        if (!s.targetPopulation.toLowerCase().includes(filters.population.toLowerCase())) return false
+      }
+      if (filters.status && s.status !== filters.status) return false
+      if (filters.minScore > 0 && s.overallSdohScore < filters.minScore) return false
+      return true
+    })
   }, [filters])
 
-  async function loadData() {
-    try {
-      const [kpiRes, sdohRes] = await Promise.all([
-        fetchKpis(),
-        fetchSdohAggregates()
-      ])
-      setKpis(kpiRes)
-      setSdohData(sdohRes)
-      setUsingDemo(false)
-    } catch {
-      // silently use demo data
-    }
-  }
+  const chartData = useMemo(() => {
+    return SDOH_AGGREGATES.map(d => ({
+      ...d,
+      highlighted: filters.sdoh ? d.determinant === filters.sdoh : false
+    }))
+  }, [filters.sdoh])
 
-  async function loadStudies() {
-    try {
-      const params = {}
-      if (filters.population) params.population = filters.population
-      if (filters.status) params.status = filters.status
-      if (filters.minScore) params.minScore = filters.minScore
-      const data = await fetchStudies(params)
-      setStudies(data)
-      setUsingDemo(false)
-    } catch {
-      // filter demo data locally
-      let filtered = DEMO_STUDIES
-      if (filters.population) {
-        filtered = filtered.filter(s =>
-          s.targetPopulation.toLowerCase().includes(filters.population.toLowerCase()))
-      }
-      if (filters.status) {
-        filtered = filtered.filter(s =>
-          s.status.toLowerCase() === filters.status.toLowerCase())
-      }
-      if (filters.minScore) {
-        filtered = filtered.filter(s => s.overallSdohScore >= parseFloat(filters.minScore))
-      }
-      setStudies(filtered)
-    }
-  }
+  const liveKpis = useMemo(() => ({
+    ...KPIS,
+    totalStudies: filteredStudies.length,
+    activeStudies: filteredStudies.filter(s => s.status === 'Active').length,
+    completedStudies: filteredStudies.filter(s => s.status === 'Completed').length,
+    totalParticipants: filteredStudies.reduce((sum, s) => sum + (s.participants || 0), 0),
+    averageSdohAlignment: filteredStudies.length
+      ? Math.round(filteredStudies.reduce((s, st) => s + st.overallSdohScore, 0) / filteredStudies.length * 10) / 10
+      : 0
+  }), [filteredStudies])
 
   return (
     <div className="app">
-      <Header />
-      {usingDemo && (
-        <div className="demo-banner">
-          <span>⚡</span> Running with demo data — start the Spring Boot backend for live data
-        </div>
-      )}
+      <Header activeTab={activeTab} tabs={TABS} onTabChange={setActiveTab} />
+
       <main className="main">
-        <KpiBar kpis={kpis} />
-        <div className="content-grid">
-          <aside className="sidebar">
-            <FilterPanel filters={filters} onChange={setFilters} />
-          </aside>
-          <section className="charts-section">
-            <SdohChart data={sdohData} />
-            <StudyTable studies={studies} />
-          </section>
-        </div>
+        {/* Tab: Overview */}
+        {activeTab === 'Overview' && (
+          <div className="tab-content">
+            <div className="page-intro">
+              <h2 className="page-heading">Research Analytics Dashboard</h2>
+              <p className="page-sub">Social Determinants of Health alignment across active research studies · Canadian Public Health Association Framework</p>
+            </div>
+            <KpiBar kpis={liveKpis} />
+            <div className="overview-grid">
+              <TrendChart />
+              <PopulationChart studies={filteredStudies} />
+            </div>
+            <SdohChart data={chartData} selectedSdoh={filters.sdoh} compact />
+          </div>
+        )}
+
+        {/* Tab: SDOH Analysis */}
+        {activeTab === 'SDOH Analysis' && (
+          <div className="tab-content">
+            <div className="page-intro">
+              <h2 className="page-heading">SDOH Alignment Analysis</h2>
+              <p className="page-sub">Deep dive into how research studies address each of the 14 Social Determinants of Health</p>
+            </div>
+            <div className="content-grid">
+              <aside className="sidebar">
+                <FilterPanel filters={filters} onChange={setFilters} />
+              </aside>
+              <section className="charts-area">
+                <SdohChart data={chartData} selectedSdoh={filters.sdoh} />
+                <InsightsPanel studies={filteredStudies} sdohData={chartData} />
+              </section>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Studies */}
+        {activeTab === 'Studies' && (
+          <div className="tab-content">
+            <div className="page-intro">
+              <h2 className="page-heading">Research Studies</h2>
+              <p className="page-sub">Browse and filter all research studies in the platform</p>
+            </div>
+            <div className="content-grid">
+              <aside className="sidebar">
+                <FilterPanel filters={filters} onChange={setFilters} />
+              </aside>
+              <section className="charts-area">
+                <StudyTable
+                  studies={filteredStudies}
+                  selectedSdoh={filters.sdoh}
+                  onStudyClick={setSelectedStudy}
+                />
+              </section>
+            </div>
+          </div>
+        )}
+
+        {/* Tab: Insights */}
+        {activeTab === 'Insights' && (
+          <div className="tab-content">
+            <div className="page-intro">
+              <h2 className="page-heading">Platform Insights</h2>
+              <p className="page-sub">Key findings, gaps, and recommendations across all research studies</p>
+            </div>
+            <InsightsPanel studies={STUDIES} sdohData={SDOH_AGGREGATES} full />
+          </div>
+        )}
       </main>
+
       <footer className="footer">
-        <p>© 2025 Apex Health Platform · MVP Demo · Synthetic data only · Not for clinical use</p>
+        <div className="footer-inner">
+          <span className="footer-brand">Apex Health Platform</span>
+          <span className="footer-divider">·</span>
+          <span>MVP Demo · March 2025</span>
+          <span className="footer-divider">·</span>
+          <span>Synthetic data only — not for clinical use</span>
+        </div>
       </footer>
+
+      {selectedStudy && (
+        <StudyModal study={selectedStudy} onClose={() => setSelectedStudy(null)} />
+      )}
     </div>
   )
 }

@@ -5,24 +5,24 @@
   max-width: 1440px;
   margin: 0 auto;
   width: 100%;
-  padding: 32px 28px 52px;
+  padding: 32px 28px 48px;
+  animation: fadeIn 0.4s ease;
 }
-
-.tab-content { animation: fadeIn 0.25s ease; }
 
 .page-intro { margin-bottom: 24px; }
-.page-heading { font-size: 30px; color: var(--black); letter-spacing: -0.01em; }
-.page-sub { font-size: 13.5px; color: var(--text-muted); margin-top: 5px; max-width: 680px; line-height: 1.5; }
 
-/* Overview grid: trend + population side by side */
-.overview-grid {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 18px;
-  margin: 20px 0;
+.page-heading {
+  font-size: 32px;
+  color: var(--black);
+  letter-spacing: -0.01em;
 }
 
-/* SDOH + studies layout */
+.page-sub {
+  font-size: 14px;
+  color: var(--text-muted);
+  margin-top: 5px;
+}
+
 .content-grid {
   display: grid;
   grid-template-columns: 280px 1fr;
@@ -31,10 +31,15 @@
   align-items: start;
 }
 
-.sidebar { position: sticky; top: 100px; }
+.sidebar { position: sticky; top: 24px; }
+
 .charts-area { display: flex; flex-direction: column; gap: 20px; }
 
-.footer { background: var(--black); padding: 18px 28px; }
+.footer {
+  background: var(--black);
+  padding: 18px 28px;
+}
+
 .footer-inner {
   max-width: 1440px;
   margin: 0 auto;
@@ -49,8 +54,7 @@
 .footer-brand { color: var(--gold); font-weight: 600; font-family: var(--font-display); font-size: 15px; }
 .footer-divider { color: var(--gold-dark); }
 
-@media (max-width: 1060px) {
-  .overview-grid { grid-template-columns: 1fr; }
+@media (max-width: 960px) {
   .content-grid { grid-template-columns: 1fr; }
   .sidebar { position: static; }
   .main { padding: 20px 16px 40px; }
